@@ -1,3 +1,89 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { LoadingSwap } from "@/components/LoadingSwap";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+const signinSchema = z.object({
+  email: z.email().min(1),
+  password: z.string().min(6),
+});
+
+type SigninForm = z.infer<typeof signinSchema>;
+
 export function SigninTab() {
-  return null;
+  const router = useRouter();
+  const form = useForm<SigninForm>({
+    resolver: zodResolver(signinSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const { isSubmitting } = form.formState;
+
+  async function handleSignin(data: SigninForm) {
+    const res = await authClient.signIn.email(
+      { ...data, callbackURL: "/" },
+      {
+        onError: (error) => {
+          toast.error(error.error.message || "something went wrong!");
+        },
+        onSuccess: () => {
+          router.push("/");
+        },
+      }
+    );
+  }
+
+  return (
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={form.handleSubmit(handleSignin)}>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          <LoadingSwap isLoading={isSubmitting}>Sign In</LoadingSwap>
+        </Button>
+      </form>
+    </Form>
+  );
 }
