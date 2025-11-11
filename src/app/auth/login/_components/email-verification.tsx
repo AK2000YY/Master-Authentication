@@ -1,5 +1,5 @@
 import { BetterOAuthActionButton } from "@/components/auth/better-oauth-action-button";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { useEffect, useRef, useState } from "react";
 
 export function EmailVerification({ email }: { email: string }) {
