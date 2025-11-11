@@ -14,10 +14,16 @@ import { SocialAuthButton } from "./_components/social-auth-button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { EmailVerification } from "./_components/email-verification";
+
+type Tab = "signin" | "signup" | "email-verification";
 
 export default function Page() {
   const [isPending, setIsPending] = useState<boolean>(true);
+  const [email, setEmail] = useState<string>("");
+  const [selectedTab, setSelectedTab] = useState<Tab>("signin");
   const router = useRouter();
+
   useEffect(() => {
     async function checkUser() {
       await authClient.getSession().then((session) => {
@@ -30,19 +36,30 @@ export default function Page() {
 
   if (isPending) return <div>Loading...</div>;
 
+  function openEmailVerificationTab(email: string) {
+    setEmail(email);
+    setSelectedTab("email-verification");
+  }
+
   return (
-    <Tabs defaultValue="signin" className="max-auto w-full my-6 px-4">
-      <TabsList>
-        <TabsTrigger value="signin">Sign In</TabsTrigger>
-        <TabsTrigger value="signup">Sign Up</TabsTrigger>
-      </TabsList>
+    <Tabs
+      value={selectedTab}
+      onValueChange={(t) => setSelectedTab(t as Tab)}
+      className="max-auto w-full my-6 px-4"
+    >
+      {(selectedTab == "signin" || selectedTab == "signup") && (
+        <TabsList>
+          <TabsTrigger value="signin">Sign In</TabsTrigger>
+          <TabsTrigger value="signup">Sign Up</TabsTrigger>
+        </TabsList>
+      )}
       <TabsContent value="signin">
         <Card>
           <CardHeader className="text-2xl font-bold">
             <CardTitle>Sign In</CardTitle>
           </CardHeader>
           <CardContent>
-            <SigninTab />
+            <SigninTab openEmailVerificationTab={openEmailVerificationTab} />
           </CardContent>
           <Separator />
           <CardFooter className="grid grid-cols-2 gap-3">
@@ -56,12 +73,22 @@ export default function Page() {
             <CardTitle>Sign Up</CardTitle>
           </CardHeader>
           <CardContent>
-            <SignupTab />
+            <SignupTab openEmailVerificationTab={openEmailVerificationTab} />
           </CardContent>
           <Separator />
           <CardFooter className="grid grid-cols-2 gap-3">
             <SocialAuthButton />
           </CardFooter>
+        </Card>
+      </TabsContent>
+      <TabsContent value="email-verification">
+        <Card>
+          <CardHeader className="text-2xl font-bold">
+            <CardTitle>Verify Your Email</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EmailVerification email={email} />
+          </CardContent>
         </Card>
       </TabsContent>
     </Tabs>

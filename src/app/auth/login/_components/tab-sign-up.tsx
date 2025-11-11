@@ -26,7 +26,11 @@ const signupSchema = z.object({
 
 type SignupForm = z.infer<typeof signupSchema>;
 
-export function SignupTab() {
+export function SignupTab({
+  openEmailVerificationTab,
+}: {
+  openEmailVerificationTab: (email: string) => void;
+}) {
   const router = useRouter();
   const form = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
@@ -46,11 +50,10 @@ export function SignupTab() {
         onError: (error) => {
           toast.error(error.error.message || "something went wrong!");
         },
-        onSuccess: () => {
-          router.push("/");
-        },
       }
     );
+    if (res.error == null && !res.data.user.emailVerified)
+      openEmailVerificationTab(res.data.user.email);
   }
 
   return (
