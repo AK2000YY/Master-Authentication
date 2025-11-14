@@ -22,6 +22,7 @@ const signupSchema = z.object({
   email: z.email().min(1),
   password: z.string().min(6),
   name: z.string().min(1),
+  favoriteNumber: z.number().int(),
 });
 
 type SignupForm = z.infer<typeof signupSchema>;
@@ -80,6 +81,24 @@ export function SignupTab({
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="favoriteNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Favoite Number</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  {...field}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  value={field.value ?? ""}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
