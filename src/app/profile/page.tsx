@@ -26,6 +26,7 @@ import { ReactNode, Suspense } from "react";
 import { ChangePasswordForm } from "./_components/change-password-form";
 import { SetPasswordButton } from "./_components/set-password-button";
 import { SessionManagment } from "./_components/session-managment";
+import { AccountLinking } from "./_components/account-linking";
 
 export default async function Page() {
   const session = await auth.api.getSession({
@@ -105,8 +106,29 @@ export default async function Page() {
             <SessionsTab currentSessionToken={session.session.token} />
           </LoadingSuspense>
         </TabsContent>
+        <TabsContent value="accounts">
+          <LoadingSuspense>
+            <LinkedAccountsTab />
+          </LoadingSuspense>
+        </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+async function LinkedAccountsTab() {
+  const accounts = await auth.api.listUserAccounts({
+    headers: await headers(),
+  });
+  const nonCredentialAccount = accounts.filter(
+    (account) => account.providerId != "credential"
+  );
+  return (
+    <Card>
+      <CardContent>
+        <AccountLinking currentAccounts={nonCredentialAccount} />
+      </CardContent>
+    </Card>
   );
 }
 
