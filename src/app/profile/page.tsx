@@ -27,6 +27,7 @@ import { ChangePasswordForm } from "./_components/change-password-form";
 import { SetPasswordButton } from "./_components/set-password-button";
 import { SessionManagment } from "./_components/session-managment";
 import { AccountLinking } from "./_components/account-linking";
+import { AccountDeletion } from "./_components/account-deletion";
 
 export default async function Page() {
   const session = await auth.api.getSession({
@@ -110,6 +111,16 @@ export default async function Page() {
           <LoadingSuspense>
             <LinkedAccountsTab />
           </LoadingSuspense>
+        </TabsContent>
+        <TabsContent value="danger">
+          <Card className="border border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AccountDeletion />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
