@@ -66,10 +66,10 @@ export async function POST(request: Request) {
 }
 
 async function checkArcjet(request: Request) {
-  const body = (await request.json()) as unknown;
   const session = await auth.api.getSession({ headers: request.headers });
   const userIdOrIp = (session?.user.id ?? findIp(request)) || "127.0.0.1";
   if (request.url.endsWith("/auth/sign-up")) {
+    const body = (await request.json()) as unknown;
     if (
       body &&
       typeof body === "object" &&
