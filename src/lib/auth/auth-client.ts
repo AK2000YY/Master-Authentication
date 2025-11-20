@@ -3,8 +3,10 @@ import {
   inferAdditionalFields,
   passkeyClient,
   twoFactorClient,
+  adminClient,
 } from "better-auth/client/plugins";
 import { auth } from "./auth";
+import { user, admin, ac } from "@/components/auth/permissions";
 
 export const authClient = createAuthClient({
   plugins: [
@@ -13,6 +15,13 @@ export const authClient = createAuthClient({
     twoFactorClient({
       onTwoFactorRedirect: () => {
         window.location.href = "/auth/2fa";
+      },
+    }),
+    adminClient({
+      ac,
+      roles: {
+        user,
+        admin,
       },
     }),
   ],
