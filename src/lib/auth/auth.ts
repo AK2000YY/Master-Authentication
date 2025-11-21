@@ -1,5 +1,5 @@
 import { db } from "@/drizzle/db";
-import { betterAuth } from "better-auth";
+import { betterAuth, email } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { sendResetPasswordEmail } from "../email/sendResetPasswordEmail";
@@ -11,8 +11,13 @@ import { twoFactor } from "better-auth/plugins/two-factor";
 import { passkey } from "better-auth/plugins/passkey";
 import { admin as adminPlugin } from "better-auth/plugins/admin";
 import { admin, user, ac } from "@/components/auth/permissions";
+import { organization } from "better-auth/plugins/organization";
+import { invitation, member } from "@/drizzle/schema";
+import { sendOrganizationInviteEmail } from "../email/organization-invite-email";
+import { desc, eq } from "drizzle-orm";
 
 export const auth = betterAuth({
+  appName: "Better Auht",
   user: {
     changeEmail: {
       enabled: true,
@@ -91,6 +96,21 @@ export const auth = betterAuth({
       },
       defaultRole: "user",
     }),
+    organization({
+      sendInvitationEmail: async ({
+        email,
+        organization,
+        inviter,
+        invitation,
+      }) => {
+        await sendOrganizationInviteEmail({
+          invitation,
+          inviter: inviter.user,
+          organization,
+          email,
+        });
+      },
+    }),
   ],
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -105,5 +125,25 @@ export const auth = betterAuth({
         if (user != null) await sendWelcomeEmail(user);
       }
     }),
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (userSession) => {
+          const memberShip = await db.query.member.findFirst({
+            where: eq(member.userId, userSession.userId),
+            columns: { organizationId: true },
+            orderBy: desc(member.createdAt),
+          });
+
+          return {
+            data: {
+              ...userSession,
+              activeOrganizationId: memberShip?.organizationId,
+            },
+          };
+        },
+      },
+    },
   },
 });
