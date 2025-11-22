@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authClient } from "@/lib/auth/auth-client";
 import { MembersTab } from "./members-tab";
 import { InvitationsTab } from "./invitation-tab";
+import { SubsicrptionTab } from "./subsicrption-tab";
 
 export function OrganizationTab() {
   const { data: activeOrganization } = authClient.useActiveOrganization();
@@ -27,7 +28,7 @@ export function OrganizationTab() {
                 <InvitationsTab />
               </TabsContent>
               <TabsContent value="subscriptions">
-                {/* <SubscriptionsTab /> */}
+                <SubsicrptionTab />
               </TabsContent>
             </CardContent>
           </Card>

@@ -12,9 +12,16 @@ import { passkey } from "better-auth/plugins/passkey";
 import { admin as adminPlugin } from "better-auth/plugins/admin";
 import { admin, user, ac } from "@/components/auth/permissions";
 import { organization } from "better-auth/plugins/organization";
-import { invitation, member } from "@/drizzle/schema";
+import { member } from "@/drizzle/schema";
 import { sendOrganizationInviteEmail } from "../email/organization-invite-email";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
+import { stripe } from "@better-auth/stripe";
+import Stripe from "stripe";
+import { STRIPE_PLANS } from "./stripe";
+
+const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-10-29.clover",
+});
 
 export const auth = betterAuth({
   appName: "Better Auht",
@@ -109,6 +116,33 @@ export const auth = betterAuth({
           organization,
           email,
         });
+      },
+    }),
+    stripe({
+      stripeClient,
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+      createCustomerOnSignUp: true,
+      subscription: {
+        authorizeReference: async ({ user, referenceId, action }) => {
+          const memberItem = await db.query.member.findFirst({
+            where: and(
+              eq(member.organizationId, referenceId),
+              eq(member.userId, user.id)
+            ),
+          });
+
+          if (
+            action === "upgrade-subscription" ||
+            action === "cancel-subscription" ||
+            action === "restore-subscription"
+          ) {
+            return memberItem?.role === "owner";
+          }
+
+          return memberItem != null;
+        },
+        enabled: true,
+        plans: STRIPE_PLANS,
       },
     }),
   ],

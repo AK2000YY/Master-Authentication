@@ -8,6 +8,7 @@ import {
 } from "better-auth/client/plugins";
 import { auth } from "./auth";
 import { user, admin, ac } from "@/components/auth/permissions";
+import { stripeClient } from "@better-auth/stripe/client";
 
 export const authClient = createAuthClient({
   plugins: [
@@ -26,5 +27,8 @@ export const authClient = createAuthClient({
       },
     }),
     organizationClient(),
+    stripeClient({
+      subscription: true,
+    }),
   ],
 });

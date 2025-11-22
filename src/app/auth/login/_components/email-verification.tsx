@@ -12,6 +12,7 @@ export function EmailVerification({ email }: { email: string }) {
 
   function startEmailVerificationTimeDown(time = 30) {
     setTimeToNextResend(time);
+    clearInterval(interval.current);
     interval.current = setInterval(() => {
       setTimeToNextResend((t) => {
         const newT = t - 1;
